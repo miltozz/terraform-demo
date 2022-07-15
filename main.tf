@@ -12,7 +12,7 @@ provider "aws" {
 }
 
 
-//var blocks definitions. can be done on variables.tf
+//var blocks definitions. can also be done on variables.tf
 variable "vpc_cidr_block" {}
 variable "subnet_cidr_block" {}
 variable "avail_zone" {}
@@ -126,7 +126,7 @@ data "aws_ami" "amazon-linux-latest" {
 //ssh key myst be present and created beforehand
 resource "aws_key_pair" "myapp-ssh-key" {
   key_name   = "myapp-server-key"
-  public_key = file(var.public_key_location)
+  public_key = file(var.public_key_location) //doesn't use interpolation syntax ${} as there is no string
 }
 
 resource "aws_instance" "myapp-server" {
@@ -141,10 +141,14 @@ resource "aws_instance" "myapp-server" {
 
 
 /*
-  Note on user-data: 
+  Note 1: user_data: 
   Terraform does not wait for execution or gives feeedback about success
   or failure on these scripts. It just passes them on the cloud provider. 
   Debug or reports are not available. Got to SSH to check if everything went OK
+
+  Note 2: user_data touches on configuration management by running shell scripts.
+  Terraform is better suited for infra provisioning. Ansible, Puppet or Chef are 
+  better choices for configuring stuff. 
 */ 
   user_data = file("entry-script.sh") //if no file is used, <<EOF syntax needed
 
