@@ -11,6 +11,8 @@ provider "aws" {
   region = "eu-west-3"
 }
 
+
+//var blocks definitions. can be done on variables.tf
 variable "vpc_cidr_block" {}
 variable "subnet_cidr_block" {}
 variable "avail_zone" {}
@@ -93,9 +95,9 @@ resource "aws_default_security_group" "myapp-default-sg" {
 
   egress {
     description     = "Outbound ALL"
-    from_port       = 0
-    to_port         = 0
-    protocol        = "-1"
+    from_port       = 0 //any
+    to_port         = 0 //any
+    protocol        = "-1" //all
     cidr_blocks     = ["0.0.0.0/0"]
     prefix_list_ids = []
   }
@@ -121,7 +123,7 @@ data "aws_ami" "amazon-linux-latest" {
   owners = ["137112412989"] # Amazon
 }
 
-
+//ssh key myst be present and created beforehand
 resource "aws_key_pair" "myapp-ssh-key" {
   key_name   = "myapp-server-key"
   public_key = file(var.public_key_location)
@@ -136,7 +138,15 @@ resource "aws_instance" "myapp-server" {
   associate_public_ip_address = true
   key_name                    = aws_key_pair.myapp-ssh-key.key_name
   user_data_replace_on_change = true //forces instance recreation
-  user_data = file("entry-script.sh")
+
+
+/*
+  Note on user-data: 
+  Terraform does not wait for execution or gives feeedback about success
+  or failure on these scripts. It just passes them on the cloud provider. 
+  Debug or reports are not available. Got to SSH to check if everything went OK
+*/ 
+  user_data = file("entry-script.sh") //if no file is used, <<EOF syntax needed
 
   tags = {
     Name = "${var.depl_env_prefix}-My App Server"
