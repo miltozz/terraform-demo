@@ -17,6 +17,7 @@ variable "avail_zone" {}
 variable "depl_env_prefix" {}
 variable "my_ip" {}
 variable "instance_type" {}
+variable "public_key_location" {}
 
 resource "aws_vpc" "myapp-vpc" {
   cidr_block = var.vpc_cidr_block
@@ -120,22 +121,34 @@ data "aws_ami" "amazon-linux-latest" {
   owners = ["137112412989"] # Amazon
 }
 
-/*output "data-AMI-id-found"{
-  value = data.aws_ami.amazon-linux-latest.id
-}
-*/
 
+resource "aws_key_pair" "myapp-ssh-key" {
+  key_name   = "myapp-server-key"
+  public_key = file(var.public_key_location)
+}
 
 resource "aws_instance" "myapp-server" {
-  ami           = data.aws_ami.amazon-linux-latest.id
-  instance_type = var.instance_type
-  subnet_id     = aws_subnet.myapp-subnet-1.id
+  ami                         = data.aws_ami.amazon-linux-latest.id
+  instance_type               = var.instance_type
+  subnet_id                   = aws_subnet.myapp-subnet-1.id
   vpc_security_group_ids      = [aws_default_security_group.myapp-default-sg.id]
   availability_zone           = var.avail_zone
   associate_public_ip_address = true
-  key_name                    = "jenkins-cont-paris-keypair"
+  key_name                    = aws_key_pair.myapp-ssh-key.key_name
+  user_data_replace_on_change = true //forces instance recreation
+  user_data = file("entry-script.sh")
 
   tags = {
     Name = "${var.depl_env_prefix}-My App Server"
   }
 }
+
+output "data-AMI-id-found"{
+  value = data.aws_ami.amazon-linux-latest.id
+}
+
+output "instance-myapp-server-public-IP"{
+  value = aws_instance.myapp-server.public_ip
+}
+
+
