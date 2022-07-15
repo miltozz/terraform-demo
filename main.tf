@@ -149,15 +149,17 @@ Note 1: user_data:
   Debug or reports are not available. Got to SSH to check if everything went OK
 
   Note 2: user_data touches on configuration management by running shell scripts.
-  Terraform is better suited for infra provisioning. Ansible, Puppet or Chef are 
+  Terraform is better suited for infra provisioning. Ansible, Puppet, Chef, Salt are 
   better choices for configuring stuff.
 */
   user_data = file("entry-script.sh") //if no file is used, <<EOF syntax needed
 
 
   /*
-  Provisioners - USE AS LAST RESORT. Not recommended. 
-  user_data is better for shell scripts
+  Provisioners are a workaround - USE AS LAST RESORT. Not recommended. 
+  Provisioners are against Terraforms principles.Better use configuration tools
+  user_data is better for shell scripts if available
+  Alternative: use the CI tool for executing scripts seperately from Terraform.
   There are 3 provisioners
   */
 
@@ -187,7 +189,7 @@ Note 1: user_data:
     script = file("entry-script.sh")
   }
 
-  provisioner "local-exec" {
+  provisioner "local-exec" { //better to use local_file provider
     command = "echo ${self.public_ip} > instance-public-ip.txt"
   }
 
