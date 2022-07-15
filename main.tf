@@ -16,6 +16,7 @@ variable "subnet_cidr_block" {}
 variable "avail_zone" {}
 variable "depl_env_prefix" {}
 variable "my_ip" {}
+variable "instance_type" {}
 
 resource "aws_vpc" "myapp-vpc" {
   cidr_block = var.vpc_cidr_block
@@ -100,5 +101,41 @@ resource "aws_default_security_group" "myapp-default-sg" {
 
   tags = {
     Name = "${var.depl_env_prefix}-myapp-use-default-sg"
+  }
+}
+
+data "aws_ami" "amazon-linux-latest" {
+  most_recent = true
+
+  filter {
+    name   = "name"
+    values = ["amzn2-ami-hvm*-x86_64-gp2"]
+  }
+
+  filter {
+    name   = "virtualization-type"
+    values = ["hvm"]
+  }
+
+  owners = ["137112412989"] # Amazon
+}
+
+/*output "data-AMI-id-found"{
+  value = data.aws_ami.amazon-linux-latest.id
+}
+*/
+
+
+resource "aws_instance" "myapp-server" {
+  ami           = data.aws_ami.amazon-linux-latest.id
+  instance_type = var.instance_type
+  subnet_id     = aws_subnet.myapp-subnet-1.id
+  vpc_security_group_ids      = [aws_default_security_group.myapp-default-sg.id]
+  availability_zone           = var.avail_zone
+  associate_public_ip_address = true
+  key_name                    = "jenkins-cont-paris-keypair"
+
+  tags = {
+    Name = "${var.depl_env_prefix}-My App Server"
   }
 }
