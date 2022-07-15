@@ -20,7 +20,6 @@ variable "depl_env_prefix" {}
 variable "my_ip" {}
 variable "instance_type" {}
 variable "public_key_location" {}
-variable "private_key_location" {}
 
 resource "aws_vpc" "myapp-vpc" {
   cidr_block = var.vpc_cidr_block
@@ -96,8 +95,8 @@ resource "aws_default_security_group" "myapp-default-sg" {
 
   egress {
     description     = "Outbound ALL"
-    from_port       = 0 //any
-    to_port         = 0 //any
+    from_port       = 0    //any
+    to_port         = 0    //any
     protocol        = "-1" //all
     cidr_blocks     = ["0.0.0.0/0"]
     prefix_list_ids = []
@@ -141,7 +140,7 @@ resource "aws_instance" "myapp-server" {
   user_data_replace_on_change = true //forces instance recreation
 
 
-/*
+  /*
   Note 1: user_data: 
   user_data must be available by the cloud provider.
   Terraform does not wait for execution or gives feeedback about success
@@ -151,33 +150,19 @@ resource "aws_instance" "myapp-server" {
   Note 2: user_data touches on configuration management by running shell scripts.
   Terraform is better suited for infra provisioning. Ansible, Puppet or Chef are 
   better choices for configuring stuff. 
-*/ 
+*/
   user_data = file("entry-script.sh") //if no file is used, <<EOF syntax needed
-
-  connection {
-    type = "ssh"
-    host = self.public_ip //this
-    user = ec2-user
-    private_key = file(var.private_key_location)
-  }
-
-  provisioner "remote-exec"{
-    inline = {
-      "mkdir testdir",
-      "export ENV=dev"
-    }
-  }
 
   tags = {
     Name = "${var.depl_env_prefix}-My App Server"
   }
 }
 
-output "data-AMI-id-found"{
+output "data-AMI-id-found" {
   value = data.aws_ami.amazon-linux-latest.id
 }
 
-output "instance-myapp-server-public-IP"{
+output "instance-myapp-server-public-IP" {
   value = aws_instance.myapp-server.public_ip
 }
 
