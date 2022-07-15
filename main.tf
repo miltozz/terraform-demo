@@ -20,6 +20,7 @@ variable "depl_env_prefix" {}
 variable "my_ip" {}
 variable "instance_type" {}
 variable "public_key_location" {}
+variable "private_key_location" {}
 
 resource "aws_vpc" "myapp-vpc" {
   cidr_block = var.vpc_cidr_block
@@ -142,8 +143,9 @@ resource "aws_instance" "myapp-server" {
 
 /*
   Note 1: user_data: 
+  user_data must be available by the cloud provider.
   Terraform does not wait for execution or gives feeedback about success
-  or failure on these scripts. It just passes them on the cloud provider. 
+  or failure on these scripts. It just passes data on the cloud provider. 
   Debug or reports are not available. Got to SSH to check if everything went OK
 
   Note 2: user_data touches on configuration management by running shell scripts.
@@ -151,6 +153,20 @@ resource "aws_instance" "myapp-server" {
   better choices for configuring stuff. 
 */ 
   user_data = file("entry-script.sh") //if no file is used, <<EOF syntax needed
+
+  connection {
+    type = "ssh"
+    host = self.public_ip //this
+    user = ec2-user
+    private_key = file(var.private_key_location)
+  }
+
+  provisioner "remote-exec"{
+    inline = {
+      "mkdir testdir",
+      "export ENV=dev"
+    }
+  }
 
   tags = {
     Name = "${var.depl_env_prefix}-My App Server"
