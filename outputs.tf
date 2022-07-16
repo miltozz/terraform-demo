@@ -1,7 +1,7 @@
-output "data-AMI-id-found" {
-  value = data.aws_ami.amazon-linux-latest.id
+output "data-AMI-id" {
+  value = module.myapp-webserver.data-AMI-id-found
 }
 
-output "instance-myapp-server-public-IP" {
-  value = aws_instance.myapp-server.public_ip
+output "instance-public-IP" {
+  value = module.myapp-webserver.instance-myapp-server-public-IP
 }
