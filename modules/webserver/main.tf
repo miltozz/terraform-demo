@@ -35,7 +35,7 @@ data "aws_ami" "amazon-linux-latest" {
   most_recent = true
 
   filter {
-    name = "name"
+    name   = "name"
     values = [var.image_name]
   }
 
@@ -52,10 +52,11 @@ resource "aws_key_pair" "myapp-ssh-key" {
   public_key = file(var.public_key_location)
 }
 
+//module.myapp-subnet.my-subnet-1.id //module.<defined-name>.<output-name>
+
 resource "aws_instance" "myapp-server" {
-  ami           = data.aws_ami.amazon-linux-latest.id
-  instance_type = var.instance_type
-  //subnet_id                   = module.myapp-subnet.my-subnet-1.id //module.<defined-name>.<output-name>
+  ami                         = data.aws_ami.amazon-linux-latest.id
+  instance_type               = var.instance_type
   subnet_id                   = var.subnet_id
   vpc_security_group_ids      = [aws_default_security_group.myapp-default-sg.id]
   availability_zone           = var.avail_zone
