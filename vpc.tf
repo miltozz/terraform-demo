@@ -6,7 +6,7 @@ variable "vpc_cidr_block" {}
 variable "private_subnet_cidr_blocks" {}
 variable "public_subnet_cidr_blocks" {}
 
-data "aws_availablitily_zones" "azs" {}
+data "aws_availability_zones" "azs" {}
 
 
 module "myapp-vpc" {
@@ -15,17 +15,27 @@ module "myapp-vpc" {
 
   name            = "myapp-vpc"
   cidr            = var.vpc_cidr_block
-  azs             = data.aws_availablitily_zones.azs.names
   private_subnets = var.private_subnet_cidr_blocks
   public_subnets  = var.public_subnet_cidr_blocks
+  azs             = data.aws_availability_zones.azs.names
 
-  enable_nat_gateway = true
-  single_nat_gateway = true
+  enable_nat_gateway   = true
+  single_nat_gateway   = true
   enable_dns_hostnames = true
 
   tags = {
-    "kubernetes.io/cluster/myapp-cluster" = "shared"
-    Terraform   = "true"
-    Environment = "dev"
+    "kubernetes.io/cluster/myapp-eks-cluster" = "shared" //labels for Cloud Controller Manager
+    Terraform                                 = "true"
+    Environment                               = "dev"
+  }
+
+  public_subnet_tags = {
+    "kubernetes.io/cluster/myapp-eks-cluster" = "shared" //labels for K8s CCM
+    "kubernetes.io/role/elb"                  = 1
+  }
+
+  private_subnet_tags = {
+    "kubernetes.io/cluster/myapp-eks-cluster" = "shared" //labels for K8s CCM
+    "kubernetes.io/role/internal-elb"         = 1
   }
 }
