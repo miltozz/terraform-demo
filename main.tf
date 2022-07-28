@@ -139,39 +139,6 @@ resource "aws_instance" "myapp-server" {
   }
 }
 
-resource "aws_instance" "myapp-server-2" {
-  ami                         = data.aws_ami.amazon-linux-latest.id
-  instance_type               = var.instance_type
-  key_name                    = "myapp-server-key"
-  associate_public_ip_address = true
-  subnet_id                   = aws_subnet.myapp-subnet-1.id
-  vpc_security_group_ids      = [aws_security_group.myapp-sg.id]
-  availability_zone           = var.avail_zone
-  user_data_replace_on_change = true //forces instance recreation
-
-  user_data = file("entry-script.sh") //if no file is used, <<EOF syntax needed
-
-  tags = {
-    Name = "${var.depl_env_prefix}-My App Server-2"
-  }
-}
-
-resource "aws_instance" "myapp-server-3" {
-  ami                         = data.aws_ami.amazon-linux-latest.id
-  instance_type               = var.instance_type
-  key_name                    = "myapp-server-key"
-  associate_public_ip_address = true
-  subnet_id                   = aws_subnet.myapp-subnet-1.id
-  vpc_security_group_ids      = [aws_security_group.myapp-sg.id]
-  availability_zone           = var.avail_zone
-  user_data_replace_on_change = true //forces instance recreation
-
-  user_data = file("entry-script.sh") //if no file is used, <<EOF syntax needed
-
-  tags = {
-    Name = "${var.depl_env_prefix}-My App Server-3"
-  }
-}
 output "data-AMI-id-found" {
   value = data.aws_ami.amazon-linux-latest.id
 }
