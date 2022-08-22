@@ -1,3 +1,17 @@
+terraform {
+  required_providers {
+    aws = {
+      source  = "hashicorp/aws"
+      version = "~> 4.22"
+    }
+  }
+  backend "s3" {
+    bucket = "bucketfortesting3"
+    key    = "my-eks/tf-states/eks-tfstate"
+    region = "eu-west-3"
+  }
+}
+
 provider "aws" {
   region = "eu-central-1"
 }
