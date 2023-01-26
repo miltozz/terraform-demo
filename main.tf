@@ -23,45 +23,45 @@ provider "aws" {
 # variable "instance_type" {}
 # variable "public_key_location" {}
 
-resource "aws_vpc" "myapp-vpc" {
-  cidr_block = var.vpc_cidr_block
-  tags = {
-    Name = "${var.depl_env_prefix}-tf-myapp-vpc"
-  }
-}
+# resource "aws_vpc" "myapp-vpc" {
+#   cidr_block = var.vpc_cidr_block
+#   tags = {
+#     Name = "${var.depl_env_prefix}-tf-myapp-vpc"
+#   }
+# }
 
-resource "aws_subnet" "myapp-subnet-1" {
-  vpc_id            = aws_vpc.myapp-vpc.id
-  cidr_block        = var.subnet_cidr_block
-  availability_zone = var.avail_zone
+# resource "aws_subnet" "myapp-subnet-1" {
+#   vpc_id            = aws_vpc.myapp-vpc.id
+#   cidr_block        = var.subnet_cidr_block
+#   availability_zone = var.avail_zone
 
-  tags = {
-    Name = "${var.depl_env_prefix}-tf-myapp-subnet-1"
-  }
-}
+#   tags = {
+#     Name = "${var.depl_env_prefix}-tf-myapp-subnet-1"
+#   }
+# }
 
-# https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/vpc
-# select an existing vpc
-data "aws_vpc" "existing_vpc"{
-  default = false
-  tags = {Name = "dev-tf-myapp-vpc"}
-}
+# # https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/vpc
+# # select an existing vpc
+# data "aws_vpc" "existing_vpc"{
+#   default = false
+#   tags = {Name = "dev-tf-myapp-vpc"}
+# }
 
-# Use the above found VPC to create a new subnet in it
-resource "aws_subnet" "myapp-subnet-2" {
-  vpc_id            = data.aws_vpc.existing_vpc.id
-  cidr_block        = "10.0.1.0/24"
-  availability_zone = "eu-central-1b"
+# # Use the above found VPC to create a new subnet in it
+# resource "aws_subnet" "myapp-subnet-2" {
+#   vpc_id            = data.aws_vpc.existing_vpc.id
+#   cidr_block        = "10.0.1.0/24"
+#   availability_zone = "eu-central-1b"
 
-  tags = {
-    Name = "${var.depl_env_prefix}-tf-myapp-subnet-2"
-  }
-}
+#   tags = {
+#     Name = "${var.depl_env_prefix}-tf-myapp-subnet-2"
+#   }
+# }
 
-#output the found VPC
-output "data-existing-VPC-id-found" {
-  value = data.aws_vpc.existing_vpc.id
-}
+# #output the found VPC
+# output "data-existing-VPC-id-found" {
+#   value = data.aws_vpc.existing_vpc.id
+# }
 
 
 # resource "aws_internet_gateway" "myapp-igw" {
@@ -133,21 +133,21 @@ output "data-existing-VPC-id-found" {
 #   }
 # }
 
-# data "aws_ami" "amazon-linux-latest" {
-#   most_recent = true
+data "aws_ami" "amazon-linux-latest" {
+  most_recent = true
 
-#   filter {
-#     name   = "name"
-#     values = ["amzn2-ami-hvm*-x86_64-gp2"]
-#   }
+  filter {
+    name   = "name"
+    values = ["amzn2-ami-hvm*-x86_64-gp2"]
+  }
 
-#   filter {
-#     name   = "virtualization-type"
-#     values = ["hvm"]
-#   }
+  filter {
+    name   = "virtualization-type"
+    values = ["hvm"]
+  }
 
-#   owners = ["137112412989"] # Amazon
-# }
+  owners = ["137112412989"] # Amazon
+}
 
 # //ssh key myst be present and created beforehand
 # resource "aws_key_pair" "myapp-ssh-key" {
@@ -184,9 +184,9 @@ output "data-existing-VPC-id-found" {
 #   }
 # }
 
-# output "data-AMI-id-found" {
-#   value = data.aws_ami.amazon-linux-latest.id
-# }
+output "data-AMI-id-found" {
+  value = data.aws_ami.amazon-linux-latest
+}
 
 # output "instance-myapp-server-public-IP" {
 #   value = aws_instance.myapp-server.public_ip
