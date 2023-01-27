@@ -8,77 +8,57 @@ terraform {
 }
 
 provider "aws" {
-  region = "eu-west-3"
+  region = "eu-central-1"
 }
 
+variable vpc_cidr_block {}
+variable subnet_1_cidr_block {}
+variable avail_zone {}
+variable env_prefix {}
+variable instance_type {}
+variable ssh_key {}
+variable my_ip {}
 
-//var blocks definitions. can also be done on variables.tf
-variable "vpc_cidr_block" {}
-variable "subnet_cidr_block" {}
-variable "avail_zone" {}
-variable "depl_env_prefix" {}
-variable "my_ip" {}
-variable "instance_type" {}
-variable "public_key_location" {}
+data "aws_ami" "amazon-linux-image" {
+  most_recent = true
+  owners      = ["amazon"]
+
+  filter {
+    name   = "name"
+    values = ["amzn2-ami-hvm-*-x86_64-gp2"]
+  }
+
+  filter {
+    name   = "virtualization-type"
+    values = ["hvm"]
+  }
+}
+
+output "ami_id" {
+  value = data.aws_ami.amazon-linux-image.id
+}
 
 resource "aws_vpc" "myapp-vpc" {
   cidr_block = var.vpc_cidr_block
   tags = {
-    Name = "${var.depl_env_prefix}-tf-myapp-vpc"
+      Name = "${var.env_prefix}-vpc"
   }
 }
 
 resource "aws_subnet" "myapp-subnet-1" {
-  vpc_id            = aws_vpc.myapp-vpc.id
-  cidr_block        = var.subnet_cidr_block
-  availability_zone = var.avail_zone
-
-  tags = {
-    Name = "${var.depl_env_prefix}-tf-myapp-subnet-1"
-  }
-}
-
-resource "aws_internet_gateway" "myapp-igw" {
   vpc_id = aws_vpc.myapp-vpc.id
+  cidr_block = var.subnet_1_cidr_block
+  availability_zone = var.avail_zone
   tags = {
-    Name = "${var.depl_env_prefix}-tf-myapp-igw"
+      Name = "${var.env_prefix}-subnet-1"
   }
 }
 
-
-# Option 1: Create new aws_route_table, and then aws_route_table_association 
-# Option 2: Use the aws created default route table, as below (adoption) (advanced resource)
-
-resource "aws_default_route_table" "myapp-default-rtb" {
-  default_route_table_id = aws_vpc.myapp-vpc.default_route_table_id
-
-  route {
-    cidr_block = "0.0.0.0/0"
-    gateway_id = aws_internet_gateway.myapp-igw.id
-  }
-
-  tags = {
-    Name = "${var.depl_env_prefix}-tf-myapp-default-rtb"
-  }
-}
-
-/* Option 1: Create security group
 resource "aws_security_group" "myapp-sg" {
-  name        = "${var.depl_env_prefix}-tf-myapp-sg"
-  description = "myapp security group"
-  vpc_id      = aws_vpc.myapp-vpc.id
-  ...
-  ingress
-  egress
-  ...
-*/
-
-# Option 2: Use the aws created, default security group (adoption) (advanced resource)
-resource "aws_default_security_group" "myapp-default-sg" {
+  name   = "myapp-sg"
   vpc_id = aws_vpc.myapp-vpc.id
 
   ingress {
-    description = "Inbound SSH"
     from_port   = 22
     to_port     = 22
     protocol    = "tcp"
@@ -86,7 +66,6 @@ resource "aws_default_security_group" "myapp-default-sg" {
   }
 
   ingress {
-    description = "Inbound HTTP"
     from_port   = 8080
     to_port     = 8080
     protocol    = "tcp"
@@ -94,76 +73,98 @@ resource "aws_default_security_group" "myapp-default-sg" {
   }
 
   egress {
-    description     = "Outbound ALL"
-    from_port       = 0    //any
-    to_port         = 0    //any
-    protocol        = "-1" //all
+    from_port       = 0
+    to_port         = 0
+    protocol        = "-1"
     cidr_blocks     = ["0.0.0.0/0"]
     prefix_list_ids = []
   }
 
   tags = {
-    Name = "${var.depl_env_prefix}-myapp-use-default-sg"
+    Name = "${var.env_prefix}-sg"
   }
 }
 
-data "aws_ami" "amazon-linux-latest" {
-  most_recent = true
-
-  filter {
-    name   = "name"
-    values = ["amzn2-ami-hvm*-x86_64-gp2"]
-  }
-
-  filter {
-    name   = "virtualization-type"
-    values = ["hvm"]
-  }
-
-  owners = ["137112412989"] # Amazon
+resource "aws_internet_gateway" "myapp-igw" {
+	vpc_id = aws_vpc.myapp-vpc.id
+    
+    tags = {
+     Name = "${var.env_prefix}-internet-gateway"
+   }
 }
 
-//ssh key myst be present and created beforehand
-resource "aws_key_pair" "myapp-ssh-key" {
-  key_name   = "myapp-server-key"
-  public_key = file(var.public_key_location) //doesn't use interpolation syntax ${} as there is no string
+resource "aws_route_table" "myapp-route-table" {
+   vpc_id = aws_vpc.myapp-vpc.id
+
+   route {
+     cidr_block = "0.0.0.0/0"
+     gateway_id = aws_internet_gateway.myapp-igw.id
+   }
+
+   # default route, mapping VPC CIDR block to "local", created implicitly and cannot be specified.
+
+   tags = {
+     Name = "${var.env_prefix}-route-table"
+   }
+ }
+
+# Associate subnet with Route Table
+resource "aws_route_table_association" "a-rtb-subnet" {
+  subnet_id      = aws_subnet.myapp-subnet-1.id
+  route_table_id = aws_route_table.myapp-route-table.id
+}
+
+resource "aws_key_pair" "ssh-key" {
+  key_name   = "myapp-key"
+  public_key = file(var.ssh_key)
+}
+
+output "server-ip" {
+    value = aws_instance.myapp-server.public_ip
 }
 
 resource "aws_instance" "myapp-server" {
-  ami                         = data.aws_ami.amazon-linux-latest.id
+  ami                         = data.aws_ami.amazon-linux-image.id
   instance_type               = var.instance_type
-  subnet_id                   = aws_subnet.myapp-subnet-1.id
-  vpc_security_group_ids      = [aws_default_security_group.myapp-default-sg.id]
-  availability_zone           = var.avail_zone
+  key_name                    = "myapp-key"
   associate_public_ip_address = true
-  key_name                    = aws_key_pair.myapp-ssh-key.key_name
-  user_data_replace_on_change = true //forces instance recreation
-
-
-  /*
-  Note 1: user_data: 
-  user_data must be available by the cloud provider.
-  Terraform does not wait for execution or gives feeedback about success
-  or failure on these scripts. It just passes data on the cloud provider. 
-  Debug or reports are not available. Got to SSH to check if everything went OK
-
-  Note 2: user_data touches on configuration management by running shell scripts.
-  Terraform is better suited for infra provisioning. Ansible, Puppet or Chef are 
-  better choices for configuring stuff. 
-*/
-  user_data = file("entry-script.sh") //if no file is used, <<EOF syntax needed
+  subnet_id                   = aws_subnet.myapp-subnet-1.id
+  vpc_security_group_ids      = [aws_security_group.myapp-sg.id]
+  availability_zone			      = var.avail_zone
 
   tags = {
-    Name = "${var.depl_env_prefix}-My App Server"
+    Name = "${var.env_prefix}-server"
   }
+
+  user_data = <<EOF
+                 #!/bin/bash
+                 apt-get update && apt-get install -y docker-ce
+                 systemctl start docker
+                 usermod -aG docker ec2-user
+                 docker run -p 8080:8080 nginx
+              EOF
 }
 
-output "data-AMI-id-found" {
-  value = data.aws_ami.amazon-linux-latest.id
-}
+resource "aws_instance" "myapp-server-two" {
+  ami                         = data.aws_ami.amazon-linux-image.id
+  instance_type               = var.instance_type
+  key_name                    = "myapp-key"
+  associate_public_ip_address = true
+  subnet_id                   = aws_subnet.myapp-subnet-1.id
+  vpc_security_group_ids      = [aws_security_group.myapp-sg.id]
+  availability_zone			      = var.avail_zone
 
-output "instance-myapp-server-public-IP" {
-  value = aws_instance.myapp-server.public_ip
+  tags = {
+    Name = "${var.env_prefix}-server-two"
+  }
+
+  user_data = <<EOF
+                 #!/bin/bash
+                 apt-get update && apt-get install -y docker-ce
+                 systemctl start docker
+                 usermod -aG docker ec2-user
+                 docker run -p 8080:8080 nginx
+              EOF
 }
 
 
