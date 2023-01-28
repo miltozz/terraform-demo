@@ -2,13 +2,13 @@ terraform {
   required_providers {
     aws = {
       source  = "hashicorp/aws"
-      version = "~> 4.22"
+      version = "~> 4.51.0"
     }
   }
 }
 
 provider "aws" {
-  region = "eu-west-3"
+  region = var.aws_region
 }
 
 resource "aws_vpc" "myapp-vpc" {
@@ -19,11 +19,11 @@ resource "aws_vpc" "myapp-vpc" {
 }
 
 module "myapp-subnet" {
-  source                 = "./modules/subnet"
-  subnet_cidr_block      = var.subnet_cidr_block
-  avail_zone             = var.avail_zone
-  depl_env_prefix        = var.depl_env_prefix
-  vpc_id                 = aws_vpc.myapp-vpc.id //no var, it is declared above, in the same file
+  source            = "./modules/subnet"
+  subnet_cidr_block = var.subnet_cidr_block
+  avail_zone        = var.avail_zone
+  depl_env_prefix   = var.depl_env_prefix
+  vpc_id            = aws_vpc.myapp-vpc.id //no var, it is declared above, in the same file
   //default_route_table_id = aws_vpc.myapp-vpc.default_route_table_id
 }
 
