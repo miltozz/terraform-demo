@@ -23,8 +23,8 @@ module "myapp-subnet" {
   subnet_cidr_block      = var.subnet_cidr_block
   avail_zone             = var.avail_zone
   depl_env_prefix        = var.depl_env_prefix
-  vpc_id                 = aws_vpc.myapp-vpc.id
-  default_route_table_id = aws_vpc.myapp-vpc.default_route_table_id
+  vpc_id                 = aws_vpc.myapp-vpc.id //no var, it is declared above, in the same file
+  //default_route_table_id = aws_vpc.myapp-vpc.default_route_table_id
 }
 
 module "myapp-webserver" {
