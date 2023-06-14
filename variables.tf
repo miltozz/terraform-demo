@@ -71,7 +71,7 @@ variable "depl_env_prefix" {
 variable "my_ip" {
   description = "My IP for SG SSH ingress"
   type        = string
-  default     = "87.202.58.227/32"      
+  default     = "185.44.144.126/32"      
 }
 variable "instance_type" {
   description = "EC2 instance type"
@@ -81,5 +81,7 @@ variable "instance_type" {
 variable "public_key_location" {
   description = "EC2 instance type"
   type        = string
-  default     = "C:\\Users\\MLT\\.ssh\\id_ed25519.pub"     
+  //default     = "C:\\Users\\MLT\\.ssh\\id_ed25519.pub"
+  default     = "/home/mltamd/.ssh/ec2-key-for-frankfurt.pub"     
+ 
 }
