@@ -71,7 +71,7 @@ variable "depl_env_prefix" {
 variable "my_ip" {
   description = "My IP for SG SSH ingress"
   type        = string
-  default     = "185.44.144.126/32"      
+  default     = "0.0.0.126/32"      
 }
 variable "instance_type" {
   description = "EC2 instance type"
