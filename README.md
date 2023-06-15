@@ -1,6 +1,6 @@
 # A Terraform demo
 
-## Branch: provisioners
+## Branch: feature/provisioners
 - Testing terraform provisioners.
 - Lots of comments in _main.tf_
 
