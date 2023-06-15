@@ -27,11 +27,11 @@
 ```
 $ terraform plan | grep '#'
 
-  # aws_default_route_table.main-rtb will be created
-  # aws_default_security_group.default-sg will be created
+  # aws_default_route_table.myapp-default-rtb will be created
+  # aws_default_security_group.myapp-default-sg will be created
   # aws_instance.myapp-server will be created
   # aws_internet_gateway.myapp-igw will be created
-  # aws_key_pair.ssh-key will be created
+  # aws_key_pair.myapp-ssh-key will be created
   # aws_subnet.myapp-subnet-1 will be created
   # aws_vpc.myapp-vpc will be created
 ```

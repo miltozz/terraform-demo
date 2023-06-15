@@ -194,20 +194,21 @@ resource "aws_instance" "myapp-server" {
     command = "echo ${self.public_ip} > instance-public-ip.txt"
   }
 
-  //another example
-  //connect to some other host and copy using 'file'
-  provisioner "file" {
-    source      = "entry-script.sh"
-    destination = "/home/ec2-user/entry-script-on-ec2.sh"
+#   //another example
+#   //connect to some other host and copy using 'file'
+#
+#   provisioner "file" {
+#     source      = "entry-script.sh"
+#     destination = "/home/ec2-user/entry-script-on-ec2.sh"
 
-    connection {
-      type        = "ssh"
-      host        = somehost.public_ip
-      user        = "ec2-user"
-      private_key = file(var.private_key_location)
-    }
+#     connection {
+#       type        = "ssh"
+#       host        = var.somehost_public_ip //needs to be declared and initialised
+#       user        = "ec2-user"
+#       private_key = file(var.private_key_location)
+#     }
 
-  }
+#   }
 
 
   tags = {
