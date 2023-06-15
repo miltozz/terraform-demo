@@ -2,13 +2,13 @@ terraform {
   required_providers {
     aws = {
       source  = "hashicorp/aws"
-      version = "~> 4.22"
+      version = "~> 4.67.0"
     }
   }
 }
 
 provider "aws" {
-  region = "eu-west-3"
+  region = "eu-central-1"
 }
 
 
@@ -142,13 +142,13 @@ resource "aws_instance" "myapp-server" {
 
 
   /*
-Note 1: user_data: 
-  user_data must be available by the cloud provider.
-  Terraform does not wait for execution or gives feeedback about success
-  or failure on these scripts. It just passes data on the cloud provider. 
-  Debug or reports are not available. Got to SSH to check if everything went OK
+  Note 1: user_data: 
+  - user_data must be available by the cloud provider.
+  - Terraform does not wait for execution or gives feeedback about success or failure on these scripts. It just passes data on the cloud provider. 
+  - Debug or reports are not available. Got to SSH to check if everything went OK
 
-  Note 2: user_data touches on configuration management by running shell scripts.
+  Note 2:
+  - user_data touches on configuration management by running shell scripts.
   Terraform is better suited for infra provisioning. Ansible, Puppet, Chef, Salt are 
   better choices for configuring stuff.
 */
@@ -156,11 +156,12 @@ Note 1: user_data:
 
 
   /*
-  Provisioners are a workaround - USE AS LAST RESORT. Not recommended. 
-  Provisioners are against Terraforms principles.Better use configuration tools
-  user_data is better for shell scripts if available
-  Alternative: use the CI tool for executing scripts seperately from Terraform.
-  There are 3 provisioners
+  - Provisioners are a workaround - USE AS LAST RESORT. Not recommended. 
+  - Provisioners are against Terraforms principles.Better use configuration tools
+  - user_data is better for shell scripts if available
+  - Alternative: use the CI tool for executing scripts seperately from Terraform.
+  
+  There are 3 provisioners in terraform
   */
 
 
@@ -186,7 +187,7 @@ Note 1: user_data:
   }
 
   provisioner "remote-exec" { //use script file
-    script = file("entry-script.sh")
+    script = "entry-script-for-remote-exec.sh"
   }
 
   provisioner "local-exec" { //better to use local_file provider
@@ -194,6 +195,7 @@ Note 1: user_data:
   }
 
   //another example
+  //connect to some other host and copy using 'file'
   provisioner "file" {
     source      = "entry-script.sh"
     destination = "/home/ec2-user/entry-script-on-ec2.sh"
