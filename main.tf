@@ -122,8 +122,6 @@ resource "aws_instance" "myapp-server" {
   associate_public_ip_address = true
   key_name                    = aws_key_pair.ssh-key.key_name
 
-  # user_data = file("entry-script.sh")
-
   # https://developer.hashicorp.com/terraform/language/resources/provisioners/connection
   # Establishes connection to be used by all
   # generic remote provisioners (i.e. file/remote-exec)
@@ -135,19 +133,23 @@ resource "aws_instance" "myapp-server" {
   }
 
   #The file provisioner copies files or directories from the machine running Terraform to the newly created resource.
+  #Here it copies local "entry-script.sh" to remote "/home/ec2-user/entry-script-on-ec2.sh"
   provisioner "file" {
-    source      = "entry-script.sh"
+    source      = "entry-script-for-remore-exec.sh"
     destination = "/home/ec2-user/entry-script-on-ec2.sh"
   }
 
-  #The remote-exec provisioner invokes a script on a remote resource after it is created.
-  provisioner "remote-exec" {
-    script = file("entry-script.sh")
-  }
-
   #The local-exec provisioner invokes a local executable after a resource is created.
+  #Here, it echoes the public_ip of the newly created ec2-server and writes it on local file "output.txt"
   provisioner "local-exec" {
     command = "echo ${self.public_ip} > output.txt"
+  }
+
+  #The remote-exec provisioner invokes a script on a remote resource after it is created.
+  #https://developer.hashicorp.com/terraform/language/resources/provisioners/remote-exec
+  #Here, the script argument, copies local "entry-script.sh" to remote and then executes it 
+  provisioner "remote-exec" {
+    script = "entry-script-for-remore-exec.sh"
   }
 
   tags = {
