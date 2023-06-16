@@ -34,3 +34,42 @@ $ terraform plan | grep '#'
   # module.myapp-webserver.aws_security_group.myapp-sg will be created
 ```
 
+---
+
+```
+Apply complete! Resources: 8 added, 0 changed, 0 destroyed.
+
+Outputs:
+
+data-AMI-id = "ami-0aecab792d09b6d55"
+instance-public-IP = "0.0.254.61"
+subnet = {
+  "arn" = "arn:aws:ec2:eu-central-1:99999999999:subnet/subnet-0a76dff1ee7c6955c"
+  "assign_ipv6_address_on_creation" = false
+  "availability_zone" = "eu-central-1b"
+  "availability_zone_id" = "euc1-az3"
+  "cidr_block" = "10.0.1.0/24"
+  "customer_owned_ipv4_pool" = ""
+  "enable_dns64" = false
+  "enable_lni_at_device_index" = 0
+  "enable_resource_name_dns_a_record_on_launch" = false
+  "enable_resource_name_dns_aaaa_record_on_launch" = false
+  "id" = "subnet-0a76dff1ee7c6955c"
+  "ipv6_cidr_block" = ""
+  "ipv6_cidr_block_association_id" = ""
+  "ipv6_native" = false
+  "map_customer_owned_ip_on_launch" = false
+  "map_public_ip_on_launch" = false
+  "outpost_arn" = ""
+  "owner_id" = "99999999999"
+  "private_dns_hostname_type_on_launch" = "ip-name"
+  "tags" = tomap({
+    "Name" = "dev-tf-myapp-subnet-1"
+  })
+  "tags_all" = tomap({
+    "Name" = "dev-tf-myapp-subnet-1"
+  })
+  "timeouts" = null /* object */
+  "vpc_id" = "vpc-02f4bcf20d1431026"
+}
+```
