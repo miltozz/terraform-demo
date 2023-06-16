@@ -2,7 +2,7 @@ resource "aws_security_group" "myapp-sg" {
   name        = "${var.depl_env_prefix}-tf-myapp-sg"
   description = "myapp security group"
   vpc_id      = var.vpc_id
-  
+
   ingress {
     from_port   = 22
     to_port     = 22
