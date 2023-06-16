@@ -15,19 +15,19 @@ resource "aws_internet_gateway" "myapp-igw" {
 }
 
 resource "aws_route_table" "myapp-route-table" {
-   vpc_id = var.vpc_id
+  vpc_id = var.vpc_id
 
-   route {
-     cidr_block = "0.0.0.0/0"
-     gateway_id = aws_internet_gateway.myapp-igw.id
-   }
+  route {
+    cidr_block = "0.0.0.0/0"
+    gateway_id = aws_internet_gateway.myapp-igw.id
+  }
 
-   # default route, mapping VPC CIDR block to "local", created implicitly and
-   # doesn't need/cannot be specified.
+  # default route, mapping VPC CIDR block to "local", created implicitly and
+  # doesn't need/cannot be specified.
 
-   tags = {
-     Name = "${var.depl_env_prefix}-tf-myapp-route-table"
-   }
+  tags = {
+    Name = "${var.depl_env_prefix}-tf-myapp-route-table"
+  }
 }
 
 # Associate subnet with Route Table

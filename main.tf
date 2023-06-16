@@ -2,7 +2,7 @@ terraform {
   required_providers {
     aws = {
       source  = "hashicorp/aws"
-      version = "~> 4.51.0"
+      version = "~> 4.67.0"
     }
   }
 }
@@ -20,10 +20,10 @@ resource "aws_vpc" "myapp-vpc" {
 
 module "myapp-subnet" {
   source            = "./modules/subnet"
+  vpc_id            = aws_vpc.myapp-vpc.id //no var, it is declared above, in the same file
   subnet_cidr_block = var.subnet_cidr_block
   avail_zone        = var.avail_zone
   depl_env_prefix   = var.depl_env_prefix
-  vpc_id            = aws_vpc.myapp-vpc.id //no var, it is declared above, in the same file
   //default_route_table_id = aws_vpc.myapp-vpc.default_route_table_id
 }
 
@@ -36,5 +36,6 @@ module "myapp-webserver" {
   public_key_location = var.public_key_location
   instance_type       = var.instance_type
   avail_zone          = var.avail_zone
-  subnet_id           = module.myapp-subnet.my-subnet-1.id
+  subnet_id           = module.myapp-subnet.my-subnet-1-out.id//reads from the module output which returns the whole created resource
+ 
 }
