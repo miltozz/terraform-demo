@@ -2,7 +2,7 @@ terraform {
   required_providers {
     aws = {
       source  = "hashicorp/aws"
-      version = "~> 4.67.0"
+      version = "~> 4.57.0"
     }
   }
   backend "s3" {
@@ -24,7 +24,7 @@ data "aws_availability_zones" "azs" {}
 
 module "myapp-vpc" {
   source  = "terraform-aws-modules/vpc/aws"
-  version = "5.0.0"
+  version = "4.0.0"
 
   name            = "myapp-vpc"
   cidr            = var.vpc_cidr_block
