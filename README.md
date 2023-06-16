@@ -1,4 +1,6 @@
 # A Terraform demo
 
-Learning Terraform :)
+Launch an AWS EKS cluster with EKS Managed Node Groups
+
+[DOC](https://registry.terraform.io/modules/terraform-aws-modules/eks/aws/latest)
 
